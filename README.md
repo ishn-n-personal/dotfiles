@@ -4,7 +4,7 @@ A heavily **min-maxed macOS setup** inspired by Hyprland —
 fast, minimal, animation-light, and information-dense.
 
 Designed to feel **immediate**, **clean**, and **intentional**.
-
+!
 ---
 
 ## Installation
