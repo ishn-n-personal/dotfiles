@@ -7,6 +7,15 @@ Designed to feel **immediate**, **clean**, and **intentional**.
 
 ---
 
+## Installation
+
+```bash
+git clone https://github.com/ishn-n-personal/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+./scripts/install.sh
+
+--
+
 ## Desktop
 ![Desktop](screenshots/desktop.png)
 
