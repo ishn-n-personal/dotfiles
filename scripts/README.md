@@ -1,4 +1,4 @@
-# Dotfiles Scripts
+# Scripts
 
 This folder contains the install and uninstall scripts for this dotfiles repository.
 
