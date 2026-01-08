@@ -7,12 +7,11 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG_DIR="$HOME/.config"
-BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
+BACKUP_ROOT="$HOME/.dotfiles-backup"
 
 echo
-echo "Installing dotfiles"
-echo "Source:  $DOTFILES_DIR"
-echo "Backup:  $BACKUP_DIR"
+echo "Uninstalling dotfiles"
+echo "Source: $DOTFILES_DIR"
 echo
 
 # macOS guard
@@ -21,67 +20,82 @@ if [[ "$(uname)" != "Darwin" ]]; then
   exit 1
 fi
 
-mkdir -p "$BACKUP_DIR"
-mkdir -p "$CONFIG_DIR"
-
 # ─────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────
 
-backup_and_link() {
-  local src="$1"
-  local dest="$2"
+remove_symlink() {
+  local target="$1"
 
-  if [[ ! -e "$src" ]]; then
-    echo "Skipping (missing): $src"
+  if [[ -L "$target" ]]; then
+    echo "Removing symlink: $target"
+    rm "$target"
+  else
+    echo "Skipping (not a symlink): $target"
+  fi
+}
+
+restore_latest_backup() {
+  if [[ ! -d "$BACKUP_ROOT" ]]; then
+    echo "No backup directory found. Nothing to restore."
     return
   fi
 
-  if [[ -e "$dest" || -L "$dest" ]]; then
-    echo "Backing up: $dest"
-    mkdir -p "$BACKUP_DIR/$(dirname "$dest")"
-    mv "$dest" "$BACKUP_DIR/$dest"
+  local latest_backup
+  latest_backup="$(ls -1 "$BACKUP_ROOT" 2>/dev/null | sort | tail -n 1 || true)"
+
+  if [[ -z "$latest_backup" ]]; then
+    echo "No backups found. Nothing to restore."
+    return
   fi
 
-  echo "Linking: $dest -> $src"
-  mkdir -p "$(dirname "$dest")"
-  ln -s "$src" "$dest"
+  local backup_path="$BACKUP_ROOT/$latest_backup"
+
+  if [[ ! -d "$backup_path" || -z "$(ls -A "$backup_path" 2>/dev/null)" ]]; then
+    echo "Latest backup is empty. Nothing to restore."
+    return
+  fi
+
+  echo
+  read -r -p "Restore latest backup from $latest_backup? [y/N]: " confirm
+  if [[ "$confirm" =~ ^[Yy]$ ]]; then
+    echo "Restoring backup..."
+    cp -a "$backup_path"/. "$HOME"/
+    echo "Backup restored."
+  else
+    echo "Backup restore skipped."
+  fi
 }
 
 # ─────────────────────────────────────────────
-# Home-level dotfiles
+# Remove symlinks (ONLY what install.sh creates)
 # ─────────────────────────────────────────────
 
-backup_and_link "$DOTFILES_DIR/zsh/zshrc"        "$HOME/.zshrc"
-backup_and_link "$DOTFILES_DIR/zsh/zprofile"    "$HOME/.zprofile"
+remove_symlink "$HOME/.zshrc"
+remove_symlink "$HOME/.zprofile"
 
-backup_and_link "$DOTFILES_DIR/yabai/yabairc"   "$HOME/.yabairc"
-backup_and_link "$DOTFILES_DIR/skhd/skhdrc"     "$HOME/.skhdrc"
+remove_symlink "$HOME/.yabairc"
+remove_symlink "$HOME/.skhdrc"
 
-backup_and_link "$DOTFILES_DIR/borders/bordersrc" "$HOME/.bordersrc"
+remove_symlink "$HOME/.bordersrc"
+
+remove_symlink "$CONFIG_DIR/ghostty"
+remove_symlink "$CONFIG_DIR/neofetch"
+remove_symlink "$CONFIG_DIR/sketchybar"
+remove_symlink "$CONFIG_DIR/starship"
+remove_symlink "$CONFIG_DIR/tmux"
 
 # ─────────────────────────────────────────────
-# ~/.config-based tools
+# Restore backups (optional)
 # ─────────────────────────────────────────────
 
-backup_and_link "$DOTFILES_DIR/ghostty"     "$CONFIG_DIR/ghostty"
-backup_and_link "$DOTFILES_DIR/neofetch"   "$CONFIG_DIR/neofetch"
-backup_and_link "$DOTFILES_DIR/sketchybar" "$CONFIG_DIR/sketchybar"
-backup_and_link "$DOTFILES_DIR/starship"   "$CONFIG_DIR/starship"
-backup_and_link "$DOTFILES_DIR/tmux"       "$CONFIG_DIR/tmux"
+restore_latest_backup
 
 # ─────────────────────────────────────────────
 # Done
 # ─────────────────────────────────────────────
 
 echo
-echo "Dotfiles installed successfully."
-echo
-echo "Backups saved to:"
-echo "  $BACKUP_DIR"
-echo
-echo "Manual steps still required:"
-echo "  - Install Homebrew packages"
-echo "  - Enable yabai scripting addition"
-echo "  - Grant Accessibility permissions to yabai and skhd"
+echo "Dotfiles uninstalled successfully."
+echo "System returned to previous state where possible."
 echo
