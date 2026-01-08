@@ -11,9 +11,19 @@ Designed to feel **immediate**, **clean**, and **intentional**.
 ## Installation
 
 ```bash
-git clone https://github.com/ishn-n-personal/dotfiles.git ~/dotfiles
+git clone https://github.com/yuki-ishn/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ./scripts/install.sh
+```
+
+---
+
+## Uninstallation
+
+```bash
+git clone https://github.com/yuki-ishn/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+./scripts/uninstall.sh
 ```
 
 ---
