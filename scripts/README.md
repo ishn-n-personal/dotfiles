@@ -77,12 +77,15 @@ The script is safe to run even if:
 
 Install:
 
+```bash
 ./install.sh
+```
 
 Uninstall:
 
+```bash
 ./uninstall.sh
-
+```
 ---
 
 ## Testing Without Risk
